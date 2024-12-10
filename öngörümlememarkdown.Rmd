@@ -1,0 +1,77 @@
+---
+title: "ayrıştırma"
+output:
+word_document:
+keep_tex: true
+date: "2024-03-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readxl)
+veri <- read_excel("C:/Users/muzaffer/Desktop/r/r.xlsx")
+zaman_serisi <- ts(data = veri, 
+                   start = c(1992,1),
+                   end = c(1995,4),
+                   frequency = 4)
+plot(decompose(zaman_serisi))
+```
+
+```{r}
+#merkezi hareketli ortalama
+ma4 <- ma(zaman_serisi, order = 4, centre = TRUE)
+ma4
+```
+
+```{r}
+#Mevsim Değerleri
+mevsim <- zaman_serisi-ma4
+mevsim
+```
+
+```{r}
+#Çeyreklikleri belirliyoruz
+quarter <- rep(1:4, length.out = length(mevsim))
+quarter
+```
+
+```{r}
+#Mevsimsel Endeks
+endeks <- tapply(mevsim, quarter,function(x) mean(x, na.rm=TRUE)) 
+endeks <- rep(endeks, length.out = length(zaman_serisi))
+endeks
+```
+
+```{r}
+#trend, konjoktürel ve hata bileşeni
+tce <- zaman_serisi - endeks
+tce
+```
+
+```{r}
+#trend oluşturuyoruz
+t <- 1:length(zaman_serisi)
+t
+```
+
+```{r}
+#regresyon oluşturup, trend bileşenini buluyoruz
+reg <- lm(tce ~ t)
+trend <- predict(reg)
+trend
+```
+
+```{r}
+#tahmin değerleri
+tahmin <- trend + endeks
+tahmin
+```
+
+```{r}
+#Hata bileşeni
+hata <- zaman_serisi - tahmin
+hata
+```
